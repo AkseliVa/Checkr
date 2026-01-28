@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
-import { collection, onSnapshot, query, where, addDoc, doc, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, addDoc, doc, deleteDoc, getDocs, orderBy } from 'firebase/firestore';
 import { TaskList } from './TaskList';
 import NewCustomerModal from './components/NewCustomerModal';
 import NewTaskModal from './components/NewTaskModal';
 import NewProjectModal from './components/NewProjectModal';
 import { Trash2 } from 'lucide-react';
 
+import { Task, Customer, Project } from './types';
+
 export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) => {
-  const [customers, setCustomers] = useState<{id: string, name: string}[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<{id: string, name: string} | null>(null);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
-  const [projects, setProjects] = useState<{id: string, name: string}[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
 
   const deleteCustomer = async (e: React.MouseEvent, id: string) => {
@@ -21,6 +23,22 @@ export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) =>
   if (window.confirm("Poistetaanko asiakas? Tätä ei voi peruuttaa.")) {
     await deleteDoc(doc(db, "customers", id));
     if (selectedCustomer?.id === id) setSelectedCustomer(null);
+  }
+};
+
+const deleteProject = async (projectId: string) => {
+  if (window.confirm("Poistetaanko projekti ja kaikki sen tehtävät?")) {
+    // 1. Delete the project itself
+    await deleteDoc(doc(db, "projects", projectId));
+
+    // 2. Fetch and delete all tasks associated with this project
+    const taskQuery = query(collection(db, "tasks"), where("projectId", "==", projectId));
+    const taskSnap = await getDocs(taskQuery); // Note: You'll need to import 'getDocs' from firestore
+    
+    const deletePromises = taskSnap.docs.map(taskDoc => deleteDoc(taskDoc.ref));
+    await Promise.all(deletePromises);
+
+    if (activeProjectId === projectId) setActiveProjectId(null);
   }
 };
 
@@ -45,13 +63,31 @@ export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) =>
       setProjects([]);
       return;
     }
-    const q = query(collection(db, "projects"), where("customerId", "==", selectedCustomer.id));
+
+    const q = query(
+      collection(db, "projects"), 
+      where("customerId", "==", selectedCustomer.id),
+      orderBy("createdAt", "desc") 
+    );
+
     const unsub = onSnapshot(q, (snap) => {
-      const projs = snap.docs.map(doc => ({ id: doc.id, name: doc.data().name }));
-      setProjects(projs);
-    });
-    return () => unsub();
-  }, [selectedCustomer]);
+      const projs = snap.docs.map(doc => {
+        const data = doc.data();
+        return { 
+          id: doc.id, 
+          ...data,
+          // Convert Firestore timestamp back to JS Date for the UI if needed
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : data.createdAt 
+        };
+      }) as Project[];
+  
+  setProjects(projs);
+}, (error) => {
+  console.error("Sorting error:", error);
+});
+
+      return () => unsub();
+    }, [selectedCustomer]);
 
   const handleAddTask = async (title: string) => {
     if (title.trim() && selectedCustomer && activeProjectId) {
@@ -74,7 +110,7 @@ export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) =>
         name,
         customerId: selectedCustomer.id,
         clientName: selectedCustomer.name,
-        createadAt: new Date()
+        createdAt: new Date()
       });
       setIsProjectModalOpen(false);
     }
@@ -134,16 +170,27 @@ export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) =>
                       {activeProjectId === project.id ? '▼ ' : '▶ '} {project.name}
                     </h3>
                     
-                    <button 
-                      onClick={() => { setActiveProjectId(project.id); setIsTaskModalOpen(true); }}
-                      style={smallBtnStyle}
-                    >
-                      + Lisää tehtävä
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                      <button 
+                        onClick={() => { setActiveProjectId(project.id); setIsTaskModalOpen(true); }}
+                        style={smallBtnStyle}
+                      >
+                        + Lisää tehtävä
+                      </button>
+                      
+                      {userRole === 'TeamLead' && (
+                        <Trash2 
+                          size={16} 
+                          color="#ff3b30" 
+                          style={{ cursor: 'pointer', opacity: 0.6 }}
+                          onClick={() => deleteProject(project.id)}
+                        />
+                      )}
+                    </div>
                   </div>
 
                   {activeProjectId === project.id && (
-                    <div style={{ padding: '10px 20px', borderLeft: '2px solid #007AFF', marginLeft: '10px' }}>
+                    <div style={{ padding: '10px 20px', borderTop: '1px solid #e5e5e7' }}>
                       <TaskList userRole={userRole} projectId={project.id} />
                     </div>
                   )}

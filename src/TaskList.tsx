@@ -1,15 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, updateDoc, doc, deleteDoc, where } from 'firebase/firestore';
+import { collection, onSnapshot, query, updateDoc, doc, deleteDoc, where, orderBy } from 'firebase/firestore';
 import { db } from './firebase';
 import { Trash2 } from 'lucide-react';
-
-interface Task {
-  id: string;
-  title: string;
-  isDone: boolean;
-  clientName: string;
-  project: string
-}
+import { Task } from './types';
 
 export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Creator', projectId: string }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -23,7 +16,8 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
   useEffect(() => {
     const q = query(
       collection(db, "tasks"),
-      where("projectId", "==", projectId)
+      where("projectId", "==", projectId),
+      orderBy("createdAt", "desc")
     );
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
