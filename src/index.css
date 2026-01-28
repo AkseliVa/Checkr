@@ -1,0 +1,64 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden; /* Prevents the "bounce" scroll effect on the whole window */
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+@keyframes modalEntry {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-content {
+  animation: modalEntry 0.2s ease-out forwards;
+}
+
+main h1 {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #1d1d1f;
+  margin-bottom: 8px;
+}
+
+main h3 {
+  color: #86868b;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.task-item, .sidebar-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.delete-hover, .delete-icon {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.task-item:hover .delete-icon,
+.sidebar-item:hover .delete-hover {
+  opacity: 1;
+}
+
+.delete-icon:hover {
+  transform: scale(1.1);
+  color: #ff3b30 !important;
+}
