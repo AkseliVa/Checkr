@@ -8,6 +8,7 @@ import { deleteTask } from './api';
 
 export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Creator', projectId: string }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
 
   useEffect(() => {
     const q = query(
@@ -79,21 +80,25 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
   return (
     <div className="task-container">
       {!tasks.length && <p style={{ color: '#8e8e93' }}>Ei tehtäviä tässä projektissa.</p>}
-      
+
       {tasks.map(task => {
         const overdue = isOverdue(task.deadline, task.isDone);
+        const isActive = activeTaskId === task.id;
         
         return (
-          <div key={task.id} className="task-item" style={getTaskStyle(task.deadline, task.isDone)}>
+          <div key={task.id} className="task-item" style={{...getTaskStyle(task.deadline, task.isDone), flexDirection: 'column', alignItems: 'stretch'}}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <input 
                 type="checkbox" 
                 checked={task.isDone} 
                 onChange={() => toggleTask(task.id, task.isDone)}
               />
-              <span style={{ textDecoration: task.isDone ? 'line-through' : 'none' }}>
+              <h4 
+                style={{ margin: 0, cursor: 'pointer', flex: 1 }} 
+                onClick={() => setActiveTaskId(activeTaskId === task.id ? null : task.id)}
+              >
                 {task.title}
-              </span>
+              </h4>
               {task.deadline && (
                 <span style={{ 
                   fontSize: '13px', 
@@ -106,17 +111,45 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
                 </span>
               )}
             </div>
+            <div>
+            {activeTaskId === task.id && (
+              <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '6px' }}>
+                <strong>Kuvaus:</strong>
+                <p style={{ margin: '5px 0 0 0' }}>{task.description || 'Ei kuvausta.'}</p>
+              </div>
+            )}
+            </div>
             
-            <Trash2 
-              size={16} 
-              color="#ff3b30"
-              style={{ cursor: 'pointer', opacity: 0.6 }} 
-              onClick={() => deleteTask(task.id)}
-              className="delete-icon"
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', paddingTop: '10px' }}>
+                <button 
+                  onClick={() => { setActiveTaskId(task.id) }}
+                  style={smallBtnStyle}
+                >
+                  + Lisää kommentti
+                </button>
+                
+                {userRole === 'TeamLead' && (
+                  <Trash2 
+                    size={16} 
+                    color="#ff3b30" 
+                    style={{ cursor: 'pointer', opacity: 0.6 }}
+                    onClick={() => deleteTask(task.id)}
+                  />
+                )}
+              </div>
           </div>
         );
       })}
     </div>
   );
+};
+
+const smallBtnStyle = { 
+  padding: '4px 10px', 
+  fontSize: '12px', 
+  cursor: 'pointer', 
+  backgroundColor: 'transparent', 
+  color: '#007AFF', 
+  border: '1px solid #007AFF', 
+  borderRadius: '4px' 
 };

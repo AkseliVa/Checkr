@@ -11,12 +11,6 @@ const NewTaskModal = ({ isOpen, onClose, onSubmit, title }: any) => {
     setNewTask({ title: '', deadline: undefined, description: '' } as Task);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-        handleSubmit();
-    }
-  };
-
   const handleCancel = () => {
     onClose();
     setNewTask({ title: '', deadline: undefined, description: '' } as Task);
@@ -28,21 +22,18 @@ const NewTaskModal = ({ isOpen, onClose, onSubmit, title }: any) => {
         <h3>{title}</h3>
         <input
           autoFocus
-          onKeyDown={handleKeyDown}
           style={inputStyle}
           value={newTask.title}
           onChange={(e) => setNewTask({ ...newTask, title: e.target.value } )}
           placeholder="Tehtävän nimi"
         />
-        <input
-          onKeyDown={handleKeyDown}
+        <textarea
           style={inputStyle}
           value={newTask.description}
           onChange={(e) => setNewTask({ ...newTask, description: e.target.value } )}
           placeholder="Tehtävän kuvaus"
         />
         <input 
-          onKeyDown={handleKeyDown}
           style={inputStyle}
           value={newTask.deadline ? newTask.deadline.toISOString().slice(0, 10) : ''}
           onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value ? new Date(e.target.value) : undefined })}

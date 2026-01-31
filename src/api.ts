@@ -33,6 +33,7 @@ export const handleAddTask = async (task: Task, selectedCustomer: Customer, acti
         createdAt: new Date(),
         deadline: task.deadline,
         clientName: selectedCustomer.name,
+        description: task.description,
         project: projects.find(p => p.id === activeProjectId)?.name || ''
       });
       setIsTaskModalOpen(false);
