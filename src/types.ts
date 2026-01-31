@@ -8,7 +8,15 @@ export interface Task {
   customerId: string;
   projectId: string;
   deadline: Date;
+  description?: string;
 };
+
+export interface Comment {
+    id: string;
+    taskId: string;
+    message: string;
+    createdAt: Date;
+}
 
 export interface Project {
     id: string

@@ -11,10 +11,15 @@ const NewProjectModal = ({ isOpen, onClose, onSubmit, title }: any) => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-          handleSubmit();
-      }
+    if (e.key === 'Enter') {
+        handleSubmit();
     }
+  };
+
+  const handleCancel = () => {
+    onClose();
+    setValue('');
+  }
 
   return (
     <div style={modalOverlayStyle}>
@@ -30,7 +35,7 @@ const NewProjectModal = ({ isOpen, onClose, onSubmit, title }: any) => {
         />
         <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
           <button onClick={handleSubmit} style={confirmBtn}>Lisää</button>
-          <button onClick={onClose} style={cancelBtn}>Peruuta</button>
+          <button onClick={handleCancel} style={cancelBtn}>Peruuta</button>
         </div>
       </div>
     </div>

@@ -14,6 +14,11 @@ const NewCustomerModal = ({ isOpen, onClose, onSubmit, title, label }: any) => {
     if (e.key === 'Enter') {
         handleSubmit();
     }
+  };
+
+  const handleCancel = () => {
+    onClose();
+    setValue('');
   }
 
   return (
@@ -30,7 +35,7 @@ const NewCustomerModal = ({ isOpen, onClose, onSubmit, title, label }: any) => {
         />
         <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
           <button onClick={handleSubmit} style={confirmBtn}>Lisää</button>
-          <button onClick={onClose} style={cancelBtn}>Peruuta</button>
+          <button onClick={handleCancel} style={cancelBtn}>Peruuta</button>
         </div>
       </div>
     </div>

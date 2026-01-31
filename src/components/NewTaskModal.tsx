@@ -2,21 +2,25 @@ import React from "react";
 import { Task } from "src/types";
 
 const NewTaskModal = ({ isOpen, onClose, onSubmit, title }: any) => {
-  const [value, setValue] = React.useState('');
-  const [newTask, setNewTask] = React.useState<Task>({title: '', deadline: undefined} as Task)
+  const [newTask, setNewTask] = React.useState<Task>({title: '', deadline: undefined, description: ''} as Task)
 
   if (!isOpen) return null;
 
   const handleSubmit = () => {
     onSubmit(newTask);
-    setNewTask({ title: '', deadline: undefined } as Task);
+    setNewTask({ title: '', deadline: undefined, description: '' } as Task);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-          handleSubmit();
-      }
+    if (e.key === 'Enter') {
+        handleSubmit();
     }
+  };
+
+  const handleCancel = () => {
+    onClose();
+    setNewTask({ title: '', deadline: undefined, description: '' } as Task);
+  }
 
   return (
     <div style={modalOverlayStyle}>
@@ -30,6 +34,13 @@ const NewTaskModal = ({ isOpen, onClose, onSubmit, title }: any) => {
           onChange={(e) => setNewTask({ ...newTask, title: e.target.value } )}
           placeholder="Tehtävän nimi"
         />
+        <input
+          onKeyDown={handleKeyDown}
+          style={inputStyle}
+          value={newTask.description}
+          onChange={(e) => setNewTask({ ...newTask, description: e.target.value } )}
+          placeholder="Tehtävän kuvaus"
+        />
         <input 
           onKeyDown={handleKeyDown}
           style={inputStyle}
@@ -40,7 +51,7 @@ const NewTaskModal = ({ isOpen, onClose, onSubmit, title }: any) => {
         />
         <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
           <button onClick={handleSubmit} style={confirmBtn}>Lisää</button>
-          <button onClick={onClose} style={cancelBtn}>Peruuta</button>
+          <button onClick={handleCancel} style={cancelBtn}>Peruuta</button>
         </div>
       </div>
     </div>
@@ -60,6 +71,6 @@ const modalContentStyle: React.CSSProperties = {
   boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
 };
 
-const inputStyle = { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' };
+const inputStyle = { width: '90%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' };
 const confirmBtn = { padding: '8px 16px', backgroundColor: '#007AFF', color: 'white', border: 'none', borderRadius: '6px' };
 const cancelBtn = { padding: '8px 16px', backgroundColor: '#eee', border: 'none', borderRadius: '6px' };
