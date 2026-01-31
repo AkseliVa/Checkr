@@ -63,6 +63,17 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
   const getTaskStyle = (deadline: any, isDone: boolean): React.CSSProperties => {
     const overdue = isOverdue(deadline, isDone);
     
+    let bgColor = 'transparent';
+    let borderColor = 'transparent';
+
+    if (overdue) {
+      bgColor = '#ffe5e5';
+      borderColor = '#ffb2b2';
+    } else if (isDone) {
+      bgColor = '#8aec92';
+      borderColor = '#b0c4b2';
+    }
+
     return {
       display: 'flex',
       justifyContent: 'space-between',
@@ -71,9 +82,9 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
       borderRadius: '6px',
       cursor: 'pointer',
       marginBottom: '8px',
-      transition: 'background-color 0.3s ease',
-      backgroundColor: overdue ? '#ffe5e5' : 'transparent',
-      border: overdue ? '1px solid #ffb2b2' : '1px solid transparent'
+      transition: 'all 0.2s ease',
+      backgroundColor: bgColor,
+      border: `1px solid ${borderColor}`
     };
   };
 
