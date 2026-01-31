@@ -19,27 +19,19 @@ export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) =>
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
 
-  const deleteCustomer = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation(); 
-    if (window.confirm("Poistetaanko asiakas? Tätä ei voi peruuttaa.")) {
-      await deleteDoc(doc(db, "customers", id));
-      if (selectedCustomer?.id === id) setSelectedCustomer(null);
+  const deleteProject = async (projectId: string) => {
+    if (window.confirm("Poistetaanko projekti ja kaikki sen tehtävät?")) {
+      await deleteDoc(doc(db, "projects", projectId));
+
+      const taskQuery = query(collection(db, "tasks"), where("projectId", "==", projectId));
+      const taskSnap = await getDocs(taskQuery);
+      
+      const deletePromises = taskSnap.docs.map(taskDoc => deleteDoc(taskDoc.ref));
+      await Promise.all(deletePromises);
+
+      if (activeProjectId === projectId) setActiveProjectId(null);
     }
-};
-
-const deleteProject = async (projectId: string) => {
-  if (window.confirm("Poistetaanko projekti ja kaikki sen tehtävät?")) {
-    await deleteDoc(doc(db, "projects", projectId));
-
-    const taskQuery = query(collection(db, "tasks"), where("projectId", "==", projectId));
-    const taskSnap = await getDocs(taskQuery);
-    
-    const deletePromises = taskSnap.docs.map(taskDoc => deleteDoc(taskDoc.ref));
-    await Promise.all(deletePromises);
-
-    if (activeProjectId === projectId) setActiveProjectId(null);
-  }
-};
+  };
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "customers"), (snap) => {
@@ -87,14 +79,15 @@ const deleteProject = async (projectId: string) => {
       return () => unsub();
     }, [selectedCustomer]);
 
-  const handleAddTask = async (title: string) => {
-    if (title.trim() && selectedCustomer && activeProjectId) {
+  const handleAddTask = async (task: Task) => {
+    if (task.title.trim() && selectedCustomer && activeProjectId) {
       await addDoc(collection(db, "tasks"), {
-        title,
+        title: task.title,
         customerId: selectedCustomer.id,
         projectId: activeProjectId,
         isDone: false,
         createdAt: new Date(),
+        deadline: task.deadline,
         clientName: selectedCustomer.name,
         project: projects.find(p => p.id === activeProjectId)?.name || ''
       });
@@ -211,37 +204,12 @@ const dashboardContainerStyle: React.CSSProperties = {
   overflow: 'hidden'
 };
 
-const sidebarStyle: React.CSSProperties = {
-  width: '260px',
-  minWidth: '260px', // Prevents it from shrinking
-  backgroundColor: '#f5f5f7', 
-  borderRight: '1px solid #d2d2d7',
-  display: 'flex',
-  flexDirection: 'column',
-  padding: '20px 10px',
-  height: '100vh', 
-  position: 'sticky', 
-  top: 0,
-  left: 0,
-  boxSizing: 'border-box'
-};
 const mainContentStyle: React.CSSProperties = {
   flex: 1, 
   height: '100vh',
   overflowY: 'auto',
   padding: '40px'
 };
-
-const customerItemStyle = (selected: boolean): React.CSSProperties => ({
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  padding: '8px 12px',
-  borderRadius: '6px',
-  backgroundColor: selected ? '#e6f0ff' : 'transparent',
-  cursor: 'pointer',
-  marginBottom: '8px'
-});
 
 const projectContainerStyle: React.CSSProperties = {
   backgroundColor: '#fff',

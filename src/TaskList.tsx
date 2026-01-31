@@ -21,10 +21,16 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
     );
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedTasks = snapshot.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data() 
-      })) as Task[];
+      const fetchedTasks = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return { 
+          id: doc.id, 
+          ...data,
+          // Convert Firestore Timestamps to JS Dates
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : data.createdAt,
+          deadline: data.deadline?.toDate ? data.deadline.toDate() : data.deadline 
+        };
+      }) as Task[];
   
       setTasks(fetchedTasks);
 
@@ -61,6 +67,11 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
               onChange={() => toggleTask(task.id, task.isDone)}
             />
             <span>{task.title}</span>
+            {task.deadline && (
+              <span style={{ fontSize: '12px', color: '#8e8e93', marginLeft: '10px' }}>
+                🕒 {new Date(task.deadline).toLocaleDateString('fi-FI')}
+              </span>
+            )}
           </div>
           
           <Trash2 

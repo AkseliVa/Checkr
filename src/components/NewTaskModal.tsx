@@ -1,13 +1,15 @@
 import React from "react";
+import { Task } from "src/types";
 
 const NewTaskModal = ({ isOpen, onClose, onSubmit, title }: any) => {
   const [value, setValue] = React.useState('');
+  const [newTask, setNewTask] = React.useState<Task>({title: '', deadline: undefined} as Task)
 
   if (!isOpen) return null;
 
   const handleSubmit = () => {
-    onSubmit(value);
-    setValue('');
+    onSubmit(newTask);
+    setNewTask({ title: '', deadline: undefined } as Task);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -24,9 +26,17 @@ const NewTaskModal = ({ isOpen, onClose, onSubmit, title }: any) => {
           autoFocus
           onKeyDown={handleKeyDown}
           style={inputStyle}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
+          value={newTask.title}
+          onChange={(e) => setNewTask({ ...newTask, title: e.target.value } )}
           placeholder="Tehtävän nimi"
+        />
+        <input 
+          onKeyDown={handleKeyDown}
+          style={inputStyle}
+          value={newTask.deadline ? newTask.deadline.toISOString().slice(0, 10) : ''}
+          onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value ? new Date(e.target.value) : undefined })}
+          type="date"
+          placeholder="Määräaika"
         />
         <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
           <button onClick={handleSubmit} style={confirmBtn}>Lisää</button>

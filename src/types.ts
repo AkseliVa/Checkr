@@ -7,6 +7,7 @@ export interface Task {
   createdAt: Date;
   customerId: string;
   projectId: string;
+  deadline: Date;
 };
 
 export interface Project {
