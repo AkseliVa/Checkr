@@ -56,43 +56,74 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
     await updateDoc(taskRef, { isDone: !currentStatus });
   };
 
+  const isOverdue = (deadline: any, isDone: boolean) => {
+    if (!deadline || isDone) return false;
+    
+    // We compare the deadline date to "now"
+    const now = new Date();
+    const deadlineDate = deadline instanceof Date ? deadline : new Date(deadline);
+    
+    // Return true if the deadline is earlier than current time
+    return deadlineDate < now;
+  };
+
+  const getTaskStyle = (deadline: any, isDone: boolean): React.CSSProperties => {
+    const overdue = isOverdue(deadline, isDone);
+    
+    return {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '8px 12px',
+      borderRadius: '6px',
+      cursor: 'pointer',
+      marginBottom: '8px',
+      transition: 'background-color 0.3s ease',
+      // Logic: Red if overdue, subtle grey/transparent otherwise
+      backgroundColor: overdue ? '#ffe5e5' : 'transparent',
+      border: overdue ? '1px solid #ffb2b2' : '1px solid transparent'
+    };
+  };
+
   return (
     <div className="task-container">
-      {tasks.map(task => (
-        <div key={task.id} className="task-item" style={TaskItemStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <input 
-              type="checkbox" 
-              checked={task.isDone} 
-              onChange={() => toggleTask(task.id, task.isDone)}
-            />
-            <span>{task.title}</span>
-            {task.deadline && (
-              <span style={{ fontSize: '12px', color: '#8e8e93', marginLeft: '10px' }}>
-                🕒 {new Date(task.deadline).toLocaleDateString('fi-FI')}
+      {tasks.map(task => {
+        const overdue = isOverdue(task.deadline, task.isDone);
+        
+        return (
+          <div key={task.id} className="task-item" style={getTaskStyle(task.deadline, task.isDone)}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <input 
+                type="checkbox" 
+                checked={task.isDone} 
+                onChange={() => toggleTask(task.id, task.isDone)}
+              />
+              <span style={{ textDecoration: task.isDone ? 'line-through' : 'none' }}>
+                {task.title}
               </span>
-            )}
+              {task.deadline && (
+                <span style={{ 
+                  fontSize: '13px', 
+                  color: overdue ? '#d32f2f' : '#8e8e93', 
+                  fontWeight: overdue ? 'bold' : 'normal',
+                  marginLeft: '10px' 
+                }}>
+                  {overdue ? '⚠️ ' : '🕒 '} 
+                  {new Date(task.deadline).toLocaleDateString('fi-FI')}
+                </span>
+              )}
+            </div>
+            
+            <Trash2 
+              size={16} 
+              color="#ff3b30"
+              style={{ cursor: 'pointer', opacity: 0.6 }} 
+              onClick={() => deleteTask(task.id)}
+              className="delete-icon"
+            />
           </div>
-          
-          <Trash2 
-            size={16} 
-            color="#ff3b30"
-            style={{ cursor: 'pointer', opacity: 0.6 }} 
-            onClick={() => deleteTask(task.id)}
-            className="delete-icon"
-          />
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
-};
-
-const TaskItemStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  padding: '8px 12px',
-  borderRadius: '6px',
-  cursor: 'pointer',
-  marginBottom: '8px'
 };
