@@ -78,6 +78,8 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
 
   return (
     <div className="task-container">
+      {!tasks.length && <p style={{ color: '#8e8e93' }}>Ei tehtäviä tässä projektissa.</p>}
+      
       {tasks.map(task => {
         const overdue = isOverdue(task.deadline, task.isDone);
         
