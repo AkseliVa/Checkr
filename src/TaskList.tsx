@@ -4,14 +4,10 @@ import { db } from './firebase';
 import { Trash2 } from 'lucide-react';
 import { Task } from './types';
 
+import { deleteTask } from './api';
+
 export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Creator', projectId: string }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
-
-    const deleteTask = async (taskId: string) => {
-    if (window.confirm("Poistetaanko tehtävä?")) {
-      await deleteDoc(doc(db, "tasks", taskId));
-    }
-  };
 
   useEffect(() => {
     const q = query(
@@ -26,7 +22,6 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
         return { 
           id: doc.id, 
           ...data,
-          // Convert Firestore Timestamps to JS Dates
           createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : data.createdAt,
           deadline: data.deadline?.toDate ? data.deadline.toDate() : data.deadline 
         };
@@ -58,12 +53,9 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
 
   const isOverdue = (deadline: any, isDone: boolean) => {
     if (!deadline || isDone) return false;
-    
-    // We compare the deadline date to "now"
     const now = new Date();
     const deadlineDate = deadline instanceof Date ? deadline : new Date(deadline);
-    
-    // Return true if the deadline is earlier than current time
+
     return deadlineDate < now;
   };
 
@@ -79,7 +71,6 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
       cursor: 'pointer',
       marginBottom: '8px',
       transition: 'background-color 0.3s ease',
-      // Logic: Red if overdue, subtle grey/transparent otherwise
       backgroundColor: overdue ? '#ffe5e5' : 'transparent',
       border: overdue ? '1px solid #ffb2b2' : '1px solid transparent'
     };

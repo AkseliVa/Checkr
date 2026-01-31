@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
-import { collection, onSnapshot, query, where, addDoc, doc, deleteDoc, getDocs, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
 import { TaskList } from './TaskList';
 import NewCustomerModal from './components/NewCustomerModal';
 import NewTaskModal from './components/NewTaskModal';
@@ -9,6 +9,8 @@ import { Trash2 } from 'lucide-react';
 
 import { Task, Customer, Project } from './types';
 import { SideNav } from './components/SideNav';
+
+import { deleteProject, handleAddCustomer, handleAddTask, handleAddProject } from './api';
 
 export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -19,20 +21,6 @@ export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) =>
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
 
-  const deleteProject = async (projectId: string) => {
-    if (window.confirm("Poistetaanko projekti ja kaikki sen tehtävät?")) {
-      await deleteDoc(doc(db, "projects", projectId));
-
-      const taskQuery = query(collection(db, "tasks"), where("projectId", "==", projectId));
-      const taskSnap = await getDocs(taskQuery);
-      
-      const deletePromises = taskSnap.docs.map(taskDoc => deleteDoc(taskDoc.ref));
-      await Promise.all(deletePromises);
-
-      if (activeProjectId === projectId) setActiveProjectId(null);
-    }
-  };
-
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "customers"), (snap) => {
       const custs = snap.docs.map(doc => ({ id: doc.id, name: doc.data().name }));
@@ -41,13 +29,6 @@ export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) =>
     });
     return () => unsub();
   }, []);
-
-  const handleAddCustomer = async (name: string) => {
-    if (name.trim()) {
-      await addDoc(collection(db, "customers"), { name });
-      setIsCustomerModalOpen(false);
-    }
-  };
 
   useEffect(() => {
     if (!selectedCustomer) {
@@ -70,42 +51,14 @@ export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) =>
           createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : data.createdAt 
         };
       }) as Project[];
-  
-  setProjects(projs);
-}, (error) => {
-  console.error("Sorting error:", error);
-});
+      
+      setProjects(projs);
+    }, (error) => {
+      console.error("Sorting error:", error);
+    });
 
       return () => unsub();
     }, [selectedCustomer]);
-
-  const handleAddTask = async (task: Task) => {
-    if (task.title.trim() && selectedCustomer && activeProjectId) {
-      await addDoc(collection(db, "tasks"), {
-        title: task.title,
-        customerId: selectedCustomer.id,
-        projectId: activeProjectId,
-        isDone: false,
-        createdAt: new Date(),
-        deadline: task.deadline,
-        clientName: selectedCustomer.name,
-        project: projects.find(p => p.id === activeProjectId)?.name || ''
-      });
-      setIsTaskModalOpen(false);
-    }
-  };
-
-  const handleAddProject = async (name: string) => {
-    if (name.trim() && selectedCustomer) {
-      await addDoc(collection(db, "projects"), {
-        name,
-        customerId: selectedCustomer.id,
-        clientName: selectedCustomer.name,
-        createdAt: new Date()
-      });
-      setIsProjectModalOpen(false);
-    }
-  }
 
   return (
     <div style={dashboardContainerStyle}>
@@ -153,7 +106,7 @@ export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) =>
                           size={16} 
                           color="#ff3b30" 
                           style={{ cursor: 'pointer', opacity: 0.6 }}
-                          onClick={() => deleteProject(project.id)}
+                          onClick={() => deleteProject(project.id, activeProjectId, setActiveProjectId)}
                         />
                       )}
                     </div>
@@ -175,20 +128,21 @@ export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) =>
       <NewCustomerModal 
         isOpen={isCustomerModalOpen} 
         onClose={() => setIsCustomerModalOpen(false)} 
-        onSubmit={handleAddCustomer}
+        onSubmit={(name: string) => handleAddCustomer(name, setIsCustomerModalOpen)}
         title="Lisää uusi asiakas"
-        label="Asiakkaan nimi"
       />
+
       <NewTaskModal 
         isOpen={isTaskModalOpen} 
         onClose={() => setIsTaskModalOpen(false)} 
-        onSubmit={handleAddTask}
+        onSubmit={(task: Task) => handleAddTask(task, selectedCustomer!, activeProjectId!, setIsTaskModalOpen, projects)}
         title="Lisää uusi tehtävä"
       />
+
       <NewProjectModal 
         isOpen={isProjectModalOpen}
         onClose={() => setIsProjectModalOpen(false)}
-        onSubmit={handleAddProject}
+        onSubmit={(name: string) => handleAddProject(name, selectedCustomer!, setIsProjectModalOpen)}
         title="Lisää uusi projekti"
       />
     </div>
