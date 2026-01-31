@@ -8,6 +8,7 @@ import NewProjectModal from './components/NewProjectModal';
 import { Trash2 } from 'lucide-react';
 
 import { Task, Customer, Project } from './types';
+import { SideNav } from './components/SideNav';
 
 export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -19,21 +20,19 @@ export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) =>
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
 
   const deleteCustomer = async (e: React.MouseEvent, id: string) => {
-  e.stopPropagation(); 
-  if (window.confirm("Poistetaanko asiakas? Tätä ei voi peruuttaa.")) {
-    await deleteDoc(doc(db, "customers", id));
-    if (selectedCustomer?.id === id) setSelectedCustomer(null);
-  }
+    e.stopPropagation(); 
+    if (window.confirm("Poistetaanko asiakas? Tätä ei voi peruuttaa.")) {
+      await deleteDoc(doc(db, "customers", id));
+      if (selectedCustomer?.id === id) setSelectedCustomer(null);
+    }
 };
 
 const deleteProject = async (projectId: string) => {
   if (window.confirm("Poistetaanko projekti ja kaikki sen tehtävät?")) {
-    // 1. Delete the project itself
     await deleteDoc(doc(db, "projects", projectId));
 
-    // 2. Fetch and delete all tasks associated with this project
     const taskQuery = query(collection(db, "tasks"), where("projectId", "==", projectId));
-    const taskSnap = await getDocs(taskQuery); // Note: You'll need to import 'getDocs' from firestore
+    const taskSnap = await getDocs(taskQuery);
     
     const deletePromises = taskSnap.docs.map(taskDoc => deleteDoc(taskDoc.ref));
     await Promise.all(deletePromises);
@@ -76,7 +75,6 @@ const deleteProject = async (projectId: string) => {
         return { 
           id: doc.id, 
           ...data,
-          // Convert Firestore timestamp back to JS Date for the UI if needed
           createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : data.createdAt 
         };
       }) as Project[];
@@ -119,34 +117,13 @@ const deleteProject = async (projectId: string) => {
   return (
     <div style={dashboardContainerStyle}>
       {/* Sidenav */}
-      <nav style={sidebarStyle}>
-        {userRole === 'TeamLead' && (
-          <button 
-            onClick={() => setIsCustomerModalOpen(true)} 
-            style={{ ...btnStyle, marginTop: '30px' }}
-          >
-            + Uusi asiakas
-          </button>
-        )}
-        {customers.map(cust => (
-          <div 
-            key={cust.id}
-            onClick={() => setSelectedCustomer(cust)}
-            className="sidebar-item"
-            style={customerItemStyle(selectedCustomer?.id === cust.id)}
-          >
-            <span>{cust.name}</span>
-            
-            {userRole === 'TeamLead' && (
-              <Trash2 
-                size={14} 
-                onClick={(e) => deleteCustomer(e, cust.id)} 
-                className="delete-hover"
-              />
-            )}
-          </div>
-        ))}
-      </nav>
+      <SideNav 
+        userRole={userRole}
+        customers={customers}
+        selectedCustomer={selectedCustomer}
+        setSelectedCustomer={setSelectedCustomer}
+        openCustomerModal={() => setIsCustomerModalOpen(true)}
+      />
 
       {/* Main Window */}
       <main style={mainContentStyle}>

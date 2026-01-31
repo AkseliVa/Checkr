@@ -8,7 +8,7 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
   const [tasks, setTasks] = useState<Task[]>([]);
 
     const deleteTask = async (taskId: string) => {
-    if (window.confirm("Delete this task?")) {
+    if (window.confirm("Poistetaanko tehtävä?")) {
       await deleteDoc(doc(db, "tasks", taskId));
     }
   };
@@ -65,7 +65,7 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
           
           <Trash2 
             size={16} 
-            color="#ff3b30" // macOS Red
+            color="#ff3b30"
             style={{ cursor: 'pointer', opacity: 0.6 }} 
             onClick={() => deleteTask(task.id)}
             className="delete-icon"
