@@ -23,6 +23,16 @@ export const handleAddCustomer = async (name: string, setIsCustomerModalOpen: (o
     }
 };
 
+export const handleAddComment = async (taskId: string, message: string) => {
+    if (message.trim() && taskId) {
+        await addDoc(collection(db, "comments"), {
+            taskId,
+            message,
+            createdAt: new Date()
+        })
+    }
+};
+
 export const handleAddTask = async (task: Task, selectedCustomer: Customer, activeProjectId: string, setIsTaskModalOpen: (open: boolean) => void, projects: Project[]) => {
     if (task.title.trim() && selectedCustomer && activeProjectId) {
       await addDoc(collection(db, "tasks"), {
@@ -56,4 +66,4 @@ export const deleteTask = async (taskId: string) => {
     if (window.confirm("Poistetaanko tehtävä?")) {
       await deleteDoc(doc(db, "tasks", taskId));
     }
-  };
+};

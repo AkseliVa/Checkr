@@ -61,7 +61,7 @@ export const SideNav = ({
 
 const sidebarStyle: React.CSSProperties = {
   width: '260px',
-  minWidth: '260px', // Prevents it from shrinking
+  minWidth: '260px',
   backgroundColor: '#f5f5f7', 
   borderRight: '1px solid #d2d2d7',
   display: 'flex',

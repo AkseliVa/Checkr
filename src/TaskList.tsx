@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, updateDoc, doc, deleteDoc, where, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, updateDoc, doc, where, orderBy } from 'firebase/firestore';
 import { db } from './firebase';
 import { Trash2 } from 'lucide-react';
-import { Task } from './types';
+import { Comment, Task } from './types';
 
-import { deleteTask } from './api';
+import { deleteTask, handleAddComment } from './api';
+import { TaskComments } from './components/TaskComments';
 
 export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Creator', projectId: string }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
+  const [newComment, setNewComment] = useState<Comment>({ id: '', taskId: '', message: '', createdAt: new Date() });
 
   useEffect(() => {
     const q = query(
@@ -99,7 +101,7 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
         return (
           <div key={task.id} className="task-item" style={{...getTaskStyle(task.deadline, task.isDone), flexDirection: 'column', alignItems: 'stretch'}}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <input 
+              <input
                 type="checkbox" 
                 checked={task.isDone} 
                 onChange={() => toggleTask(task.id, task.isDone)}
@@ -121,6 +123,14 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
                   {new Date(task.deadline).toLocaleDateString('fi-FI')}
                 </span>
               )}
+              {userRole === 'TeamLead' && (
+                  <Trash2 
+                    size={16} 
+                    color="#ff3b30" 
+                    style={{ cursor: 'pointer', opacity: 0.6 }}
+                    onClick={() => deleteTask(task.id)}
+                  />
+                )}
             </div>
             <div>
             {activeTaskId === task.id && (
@@ -132,25 +142,37 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px', paddingTop: '10px' }}>
-                <button 
-                  onClick={() => { setActiveTaskId(task.id) }}
+                
+                
+                
+              </div>
+              
+              {activeTaskId === task.id && (
+                <div>
+                  <button 
+                  onClick={() => { 
+                    setActiveTaskId(task.id), 
+                    handleAddComment(task.id, newComment.message); 
+                    setNewComment({ id: '', taskId: '', message: '', createdAt: new Date() }); }}
                   style={smallBtnStyle}
                 >
                   + Lisää kommentti
                 </button>
-                
-                {userRole === 'TeamLead' && (
-                  <Trash2 
-                    size={16} 
-                    color="#ff3b30" 
-                    style={{ cursor: 'pointer', opacity: 0.6 }}
-                    onClick={() => deleteTask(task.id)}
+                <div style={{ marginTop: '10px' }}>
+                  <textarea
+                    onChange={(e) => setNewComment({ ...newComment, message: e.target.value } )}
+                    value={newComment.message}
+                    placeholder='Kommentti'
                   />
-                )}
-              </div>
-          </div>
-        );
-      })}
+                </div>
+                <div style={{ padding: '10px 20px', borderTop: '1px solid #e5e5e7' }}>
+                  <TaskComments taskId={task.id} />
+                </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
     </div>
   );
 };
