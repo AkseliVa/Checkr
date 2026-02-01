@@ -55,6 +55,6 @@ const modalContentStyle: React.CSSProperties = {
   boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
 };
 
-const inputStyle = { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' };
+const inputStyle = { width: '90%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' };
 const confirmBtn = { padding: '8px 16px', backgroundColor: '#007AFF', color: 'white', border: 'none', borderRadius: '6px' };
 const cancelBtn = { padding: '8px 16px', backgroundColor: '#eee', border: 'none', borderRadius: '6px' };
