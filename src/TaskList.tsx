@@ -141,11 +141,8 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
             )}
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', paddingTop: '10px' }}>
-                
-                
-                
-              </div>
+            <div style={{ marginTop: '10px' }}>
+            </div>
               
               {activeTaskId === task.id && (
                 <div>
