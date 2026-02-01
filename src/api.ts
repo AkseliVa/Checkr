@@ -1,5 +1,5 @@
 import { addDoc, collection, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
-import { db } from "./firebase";
+import { db, auth } from "./firebase";
 import { Customer, Project, Task } from "./types";
 
 export const deleteProject = async (projectId: string, activeProjectId: string | null, setActiveProjectId: (id: string | null) => void) => {
@@ -66,4 +66,16 @@ export const deleteTask = async (taskId: string) => {
     if (window.confirm("Poistetaanko tehtävä?")) {
       await deleteDoc(doc(db, "tasks", taskId));
     }
+};
+
+// Authentication helpers
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+
+export const signIn = async (email: string, password: string) => {
+  const userCred = await signInWithEmailAndPassword(auth, email, password);
+  return userCred.user;
+};
+
+export const signOutUser = async () => {
+  await signOut(auth);
 };

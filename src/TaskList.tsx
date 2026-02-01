@@ -35,7 +35,7 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
       snapshot.docChanges().forEach((change) => {
       if (change.type === "modified") {
         const taskData = change.doc.data() as Task;
-        if (taskData.isDone && userRole === 'TeamLead') {
+        if (taskData.isDone) {
           new window.Notification(`${taskData.clientName}`, {
             body: `${taskData.title} ${taskData.project} merkattu valmiiksi!`
           });

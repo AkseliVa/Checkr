@@ -28,14 +28,12 @@ export const SideNav = ({
     
     return (
         <nav style={sidebarStyle}>
-                {userRole === 'TeamLead' && (
                 <button 
                     onClick={() => openCustomerModal()} 
                     style={{ ...btnStyle, marginTop: '30px' }}
                 >
                     + Uusi asiakas
                 </button>
-                )}
                 {customers.map(cust => (
                 <div 
                     key={cust.id}
