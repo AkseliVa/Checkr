@@ -1,6 +1,4 @@
-import { deleteDoc, doc } from "firebase/firestore";
 import { Trash2 } from "lucide-react";
-import { db } from "../firebase";
 import { Customer } from "src/types";
 import { deleteCustomer } from "../api";
 
@@ -22,13 +20,13 @@ export const SideNav = ({
     
     return (
         <nav style={sidebarStyle}>
-                <button 
-                    onClick={() => openCustomerModal()} 
-                    style={{ ...btnStyle, marginTop: '30px' }}
-                >
-                    + Uusi asiakas
-                </button>
-                {customers.map(cust => (
+            <button 
+                onClick={() => openCustomerModal()} 
+                style={{ ...btnStyle, marginTop: '30px' }}
+            >
+                + Uusi asiakas
+            </button>
+            {customers.map(cust => (
                 <div 
                     key={cust.id}
                     onClick={() => setSelectedCustomer(cust)}
@@ -38,14 +36,14 @@ export const SideNav = ({
                     <span>{cust.name}</span>
                     
                     {(userRole == 'teamlead' || userRole == 'admin') && (
-                    <Trash2 
-                        size={14} 
-                        onClick={(e) => deleteCustomer(e, cust.id)} 
-                        className="delete-hover"
-                    />
+                        <Trash2 
+                            size={14} 
+                            onClick={(e) => deleteCustomer(e, cust.id)} 
+                            className="delete-hover"
+                        />
                     )}
                 </div>
-                ))}
+            ))}
             </nav>
 
             )
