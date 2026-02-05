@@ -5,12 +5,12 @@ import { TaskList } from './TaskList';
 import NewCustomerModal from './components/NewCustomerModal';
 import NewTaskModal from './components/NewTaskModal';
 import NewProjectModal from './components/NewProjectModal';
-import { Trash2 } from 'lucide-react';
+import { Trash2, LogOut } from 'lucide-react';
 
 import { Task, Customer, Project } from './types';
 import { SideNav } from './components/SideNav';
 
-import { deleteProject, handleAddCustomer, handleAddTask, handleAddProject } from './api';
+import { deleteProject, handleAddCustomer, handleAddTask, handleAddProject, signOutUser } from './api';
 
 export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -73,6 +73,9 @@ export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) =>
 
       {/* Main Window */}
       <main style={mainContentStyle}>
+        <div style={settingIconStyle}>
+          <LogOut onClick={() => signOutUser()} />
+        </div>
         {selectedCustomer && (
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
@@ -189,3 +192,11 @@ const smallBtnStyle = {
   border: '1px solid #007AFF', 
   borderRadius: '4px' 
 };
+
+const settingIconStyle: React.CSSProperties = {
+  position: 'absolute',
+  top: 20,
+  right: 20,
+  cursor: 'pointer',
+  opacity: 0.6
+}
