@@ -7,7 +7,7 @@ import { Comment, Task } from './types';
 import { deleteTask, handleAddComment } from './api';
 import { TaskComments } from './components/TaskComments';
 
-export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Creator', projectId: string }) => {
+export const TaskList = ({ userRole, projectId }: { userRole: 'teamlead' | 'creator' | 'admin', projectId: string }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [newComment, setNewComment] = useState<Comment>({ id: '', taskId: '', message: '', createdAt: new Date() });
@@ -123,7 +123,7 @@ export const TaskList = ({ userRole, projectId }: { userRole: 'TeamLead' | 'Crea
                   {new Date(task.deadline).toLocaleDateString('fi-FI')}
                 </span>
               )}
-              {userRole === 'TeamLead' && (
+              {(userRole == 'teamlead' || userRole == 'admin') && (
                   <Trash2 
                     size={16} 
                     color="#ff3b30" 

@@ -23,6 +23,13 @@ export const handleAddCustomer = async (name: string, setIsCustomerModalOpen: (o
     }
 };
 
+export const deleteCustomer = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation(); 
+    if (window.confirm("Poistetaanko asiakas? Tätä ei voi peruuttaa.")) {
+      await deleteDoc(doc(db, "customers", id));
+    }
+};
+
 export const handleAddComment = async (taskId: string, message: string) => {
     if (message.trim() && taskId) {
         await addDoc(collection(db, "comments"), {

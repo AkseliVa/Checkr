@@ -12,7 +12,7 @@ import { SideNav } from './components/SideNav';
 
 import { deleteProject, handleAddCustomer, handleAddTask, handleAddProject, signOutUser } from './api';
 
-export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) => {
+export const Dashboard = ({ userRole }: { userRole: 'teamlead' | 'creator' | 'admin' }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
@@ -20,6 +20,8 @@ export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) =>
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+
+  console.log("Current userRole in Dashboard:", userRole);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "customers"), (snap) => {
@@ -104,7 +106,7 @@ export const Dashboard = ({ userRole }: { userRole: 'TeamLead' | 'Creator' }) =>
                         + Lisää tehtävä
                       </button>
                       
-                      {userRole === 'TeamLead' && (
+                      {(userRole == 'admin' || userRole == 'teamlead') && (
                         <Trash2 
                           size={16} 
                           color="#ff3b30" 

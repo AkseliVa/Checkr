@@ -2,9 +2,10 @@ import { deleteDoc, doc } from "firebase/firestore";
 import { Trash2 } from "lucide-react";
 import { db } from "../firebase";
 import { Customer } from "src/types";
+import { deleteCustomer } from "../api";
 
 interface SideNavProps {
-    userRole: 'TeamLead' | 'Creator';
+    userRole: 'teamlead' | 'creator' | 'admin';
     customers: Customer[];
     selectedCustomer: Customer | null;
     setSelectedCustomer: (cust: Customer) => void;
@@ -18,13 +19,6 @@ export const SideNav = ({
     setSelectedCustomer,
     openCustomerModal
 }: SideNavProps) => {
-
-      const deleteCustomer = async (e: React.MouseEvent, id: string) => {
-        e.stopPropagation(); 
-        if (window.confirm("Poistetaanko asiakas? Tätä ei voi peruuttaa.")) {
-          await deleteDoc(doc(db, "customers", id));
-        }
-    };
     
     return (
         <nav style={sidebarStyle}>
@@ -43,7 +37,7 @@ export const SideNav = ({
                 >
                     <span>{cust.name}</span>
                     
-                    {userRole === 'TeamLead' && (
+                    {(userRole == 'teamlead' || userRole == 'admin') && (
                     <Trash2 
                         size={14} 
                         onClick={(e) => deleteCustomer(e, cust.id)} 

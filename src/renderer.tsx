@@ -9,7 +9,7 @@ import { doc, getDoc } from 'firebase/firestore';
 
 const RootApp: React.FC = () => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [role, setRole] = useState<'TeamLead' | 'Creator'>('Creator');
+  const [role, setRole] = useState<'teamlead' | 'creator' | 'admin'>('creator');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,12 +17,16 @@ const RootApp: React.FC = () => {
       setUser(u);
       if (u) {
         try {
-          const roleDoc = await getDoc(doc(db, 'allowedUsers', u.uid));
+          const roleDoc = await getDoc(doc(db, 'users', u.uid));
           const data = roleDoc.data();
-          if (data && data.role === 'TeamLead') setRole('TeamLead');
-          else setRole('Creator');
+          if (data && data.role === 'teamlead') {
+            setRole('teamlead');
+          } else if (data && data.role === 'admin') {
+            setRole('admin');
+          }
+          else setRole('creator');
         } catch (err) {
-          setRole('Creator');
+          setRole('creator');
         }
       }
       setLoading(false);
